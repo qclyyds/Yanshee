@@ -10,7 +10,8 @@ import nest_asyncio
 import os
 
 #初始化网络连接
-ip_addr = "192.168.110.55" 
+#ip_addr = "192.168.110.55" 
+ip_addr = "192.168.1.32"
 YanAPI.yan_api_init(ip_addr)
 
 
