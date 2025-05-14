@@ -343,31 +343,8 @@ class MainPage(tk.Frame):
                                      fg='white')
         self.volume_up_btn.pack(side=tk.LEFT, padx=5)
         
-        # 添加自定义说话文本输入框（放在最右侧）
-        self.speech_frame = tk.LabelFrame(self.param_frame, 
-                                        text="自定义舞蹈前的说话内容", 
-                                        font=("微软雅黑", 10),
-                                        bg='#f0f0f0')
-        # 添加一个空列作为间隔，然后将文本框放在列3
-        self.param_frame.grid_columnconfigure(2, minsize=30)  # 设置列2为间隔列，宽度30像素
-        self.speech_frame.grid(row=0, column=3, rowspan=3, pady=5, padx=10, sticky='nsew')
-        
-        self.speech_text = tk.Text(self.speech_frame,
-                                 height=5,
-                                 width=30,
-                                 font=("微软雅黑", 9))
-        self.speech_text.pack(padx=5, pady=5, fill=tk.BOTH, expand=True)
-        self.speech_text.insert('1.0', "你好，欢迎欣赏京族传统舞蹈。现在我将为大家表演京族舞蹈，请欣赏。")
-        
-        # 添加说明标签
-        tk.Label(self.speech_frame, 
-               text="注意：仅在选择'京族舞蹈组合'时有效",
-               font=("微软雅黑", 8),
-               bg='#f0f0f0',
-               fg='#666666').pack(pady=2)
-        
         # 添加分隔线
-        ttk.Separator(self.param_frame, orient='horizontal').grid(row=3, column=0, columnspan=4, pady=10, sticky='ew')
+        ttk.Separator(self.param_frame, orient='horizontal').grid(row=3, column=0, columnspan=2, pady=10, sticky='ew')
         
         # 创建按钮框架
         self.button_frame = tk.Frame(self, bg='#f0f0f0')
@@ -462,13 +439,8 @@ class MainPage(tk.Frame):
         try:
             motion_name = self.motion_var.get()
             
-            # 对于京族舞蹈组合，获取自定义说话内容
             custom_text = None
             if motion_name == "京族舞蹈组合":
-                # 获取用户输入的自定义文本
-                text_input = self.speech_text.get('1.0', 'end-1c')
-                if text_input.strip():  # 只有非空文本才使用
-                    custom_text = text_input
                 self.update_status(f"开始执行：先说话后跳京族舞蹈")
             
             # 如果选择的是映射中的中文名称，转换为英文名称

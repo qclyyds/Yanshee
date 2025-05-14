@@ -140,6 +140,10 @@ class RobotControl:
         # 特殊处理京族舞蹈组合，先说话再跳舞
         if sequence_name == "京族舞蹈组合":
             try:
+                # 检查是否已经收到停止信号
+                if self.stop_event.is_set():
+                    return
+                    
                 # 京族舞蹈介绍语，使用自定义文本或默认文本
                 intro_text = custom_text if custom_text else "你好，欢迎欣赏京族传统舞蹈。京族是中国人口较少的民族之一，主要分布在广西东兴和防城港。现在我将为大家表演京族传统舞蹈，请欣赏。"
                 
@@ -151,12 +155,30 @@ class RobotControl:
                     print(f"语音播放失败: {res['msg']}")
                 
                 # 等待语音播放完成，这里假设每10个字需要1秒
-                speech_time = len(intro_text) * 1
-                time.sleep(speech_time)
+                # 在等待过程中，间隔检查停止信号
+                speech_time = 8
+                elapsed_time = 0
+                check_interval = 0.2  # 每0.2秒检查一次停止信号
                 
+                while elapsed_time < speech_time:
+                    # 如果收到停止信号，提前结束等待
+                    if self.stop_event.is_set():
+                        print("语音播放过程中收到停止信号")
+                        return
+                        
+                    # 等待短暂时间
+                    time.sleep(check_interval)
+                    elapsed_time += check_interval
+                
+                # 再次检查停止信号
+                if self.stop_event.is_set():
+                    return
+                    
                 print("机器人开始跳舞")
             except Exception as e:
                 print(f"说话功能执行出错: {str(e)}")
+                if self.stop_event.is_set():
+                    return
             
         # 执行动作序列
         sequence = self.motion_sequences[sequence_name]
@@ -179,6 +201,10 @@ class RobotControl:
         try:
             # 设置停止标志
             self.stop_event.set()
+            
+            # 停止语音播放
+            YanAPI.stop_voice_tts()
+            print("已停止语音播放")
             
             # 立即停止当前动作
             YanAPI.stop_play_motion()
