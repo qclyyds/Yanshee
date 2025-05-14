@@ -37,7 +37,8 @@ class RobotControl:
             "GangnamStyle": 60.0,
             "HappyBirthday": 60.0,
             "SorrySorry": 60.0,
-            "WeAreTakingOff": 60.0
+            "WeAreTakingOff": 60.0,
+            "hengyi": 19.0
         }
         
         # 创建其他功能实例
@@ -78,8 +79,14 @@ class RobotControl:
             print(f"拍照出错: {str(e)}")
             return None
     
-    def start_motion(self, motion_name, version):
-        """执行机器人动作"""
+    def start_motion(self, motion_name, version, custom_text=None):
+        """执行机器人动作
+        
+        Args:
+            motion_name (str): 动作名称
+            version (str): 动作版本
+            custom_text (str, optional): 对于京族舞蹈组合，可以提供自定义说话内容
+        """
         try:
             # 如果已有动作在执行，先停止它
             if self.motion_thread and self.motion_thread.is_alive():
@@ -90,10 +97,10 @@ class RobotControl:
             self.stop_event.clear()
             
             if motion_name in self.motion_sequences:
-                # 使用线程执行合��作
+                # 使用线程执行合动作
                 self.motion_thread = Thread(
                     target=self.play_motion_sequence,
-                    args=(motion_name,)
+                    args=(motion_name, custom_text)
                 )
             else:
                 # 使用线程执行单个动作
@@ -120,11 +127,38 @@ class RobotControl:
         except Exception as e:
             print(f"执行单个动作出错: {str(e)}")
     
-    def play_motion_sequence(self, sequence_name):
-        """在线程中执行动作序列"""
+    def play_motion_sequence(self, sequence_name, custom_text=None):
+        """在线程中执行动作序列
+        
+        Args:
+            sequence_name (str): 动作序列名称
+            custom_text (str, optional): 自定义说话内容，如果提供则使用自定义内容
+        """
         if sequence_name not in self.motion_sequences:
             raise ValueError(f"未找到动作序列: {sequence_name}")
+        
+        # 特殊处理京族舞蹈组合，先说话再跳舞
+        if sequence_name == "京族舞蹈组合":
+            try:
+                # 京族舞蹈介绍语，使用自定义文本或默认文本
+                intro_text = custom_text if custom_text else "你好，欢迎欣赏京族传统舞蹈。京族是中国人口较少的民族之一，主要分布在广西东兴和防城港。现在我将为大家表演京族传统舞蹈，请欣赏。"
+                
+                print(f"机器人开始说话: {intro_text}")
+                # 调用TTS接口播放介绍语
+                res = YanAPI.start_voice_tts(intro_text, False)
+                
+                if res["code"] != 0:
+                    print(f"语音播放失败: {res['msg']}")
+                
+                # 等待语音播放完成，这里假设每10个字需要1秒
+                speech_time = len(intro_text) * 1
+                time.sleep(speech_time)
+                
+                print("机器人开始跳舞")
+            except Exception as e:
+                print(f"说话功能执行出错: {str(e)}")
             
+        # 执行动作序列
         sequence = self.motion_sequences[sequence_name]
         for motion_name, version, wait_time in sequence:
             # 检查是否收到停止信号
@@ -199,14 +233,14 @@ class RobotControl:
                     "charging": 0,
                     "percent": 0
                 },
-                "msg": f"获取电池信息失���: {str(e)}"
+                "msg": f"获取电池信息失败: {str(e)}"
             }
     
     def adjust_volume(self, increase=True):
         """调节机器人音量
         
         Args:
-            increase (bool): True表示增加音量���False表示减小音量
+            increase (bool): True表示增加音量，False表示减小音量
         
         Returns:
             int: 调整后的音量值

@@ -11,7 +11,7 @@ import os
 
 #初始化网络连接
 #ip_addr = "192.168.110.55" 
-ip_addr = "192.168.1.32"
+ip_addr = "192.168.1.239"
 YanAPI.yan_api_init(ip_addr)
 
 
@@ -196,6 +196,7 @@ class LoginPage(tk.Frame):
     def start_jingwu_combo(self):
         """直接执行京舞组合动作"""
         try:
+            # 使用默认的说话内容执行京族舞蹈组合
             self.controller.robot.start_motion("京族舞蹈组合", "v1")
             messagebox.showinfo("成功", "京族舞蹈组合表演完成！")
         except Exception as e:
@@ -271,7 +272,7 @@ class MainPage(tk.Frame):
         # 修改动作选择下拉框
         tk.Label(self.param_frame, text="选择动作:", 
                 font=("微软雅黑", 10),
-                bg='#f0f0f0').grid(row=0, column=0, pady=5)
+                bg='#f0f0f0').grid(row=0, column=0, pady=5, sticky='w')
         self.motion_var = tk.StringVar()
         self.motion_combo = ttk.Combobox(self.param_frame, 
                                        textvariable=self.motion_var,
@@ -284,10 +285,11 @@ class MainPage(tk.Frame):
                                            "江南Style",
                                            "生日快乐",
                                            "对不起对不起",
-                                           "我们起飞啦"
+                                           "我们起飞啦",
+                                           "hengyi"
                                        ],
                                        width=15)
-        self.motion_combo.grid(row=0, column=1, pady=5)
+        self.motion_combo.grid(row=0, column=1, pady=5, padx=(0, 20), sticky='w')
         self.motion_combo.set("京族舞蹈组合")
         
         # 加动作说明标签
@@ -296,30 +298,25 @@ class MainPage(tk.Frame):
                                   font=("微软雅黑", 9),
                                   bg='#f0f0f0',
                                   fg='#666666')
-        self.motion_desc.grid(row=1, column=0, columnspan=2, pady=5)
+        self.motion_desc.grid(row=1, column=0, columnspan=2, pady=5, sticky='w')
         
         # 绑定选择事件
         self.motion_combo.bind('<<ComboboxSelected>>', self.update_motion_description)
-#--------------------------------------音量--------------------------------------
-        # 在参数设置框架中添加音量控制
-        # 在动作选择下拉框后添加
         
-        # 添加分隔线
-        ttk.Separator(self.param_frame, orient='horizontal').grid(row=2, column=0, columnspan=2, pady=10, sticky='ew')
+        # 创建音量控制框架（放在选择动作的下方，左侧区域）
+        # 音量标签和控制
+        volume_label = tk.Label(self.param_frame, 
+                              text="音量控制:", 
+                              font=("微软雅黑", 10),
+                              bg='#f0f0f0')
+        volume_label.grid(row=2, column=0, pady=10, sticky='w')
         
-        # 创建音量控制框架
-        volume_frame = tk.Frame(self.param_frame, bg='#f0f0f0')
-        volume_frame.grid(row=3, column=0, columnspan=2, pady=5)
-        
-        # 音量标签
-        self.volume_label = tk.Label(volume_frame, 
-                                   text="音量控制:", 
-                                   font=("微软雅黑", 10),
-                                   bg='#f0f0f0')
-        self.volume_label.pack(side=tk.LEFT, padx=5)
+        # 音量控制按钮框架
+        volume_ctrl_frame = tk.Frame(self.param_frame, bg='#f0f0f0')
+        volume_ctrl_frame.grid(row=2, column=1, pady=10, sticky='w')
         
         # 减小音量按钮
-        self.volume_down_btn = tk.Button(volume_frame,
+        self.volume_down_btn = tk.Button(volume_ctrl_frame,
                                        text="-",
                                        command=self.decrease_volume,
                                        width=3,
@@ -329,7 +326,7 @@ class MainPage(tk.Frame):
         self.volume_down_btn.pack(side=tk.LEFT, padx=5)
         
         # 音量值显示标签
-        self.volume_value_label = tk.Label(volume_frame,
+        self.volume_value_label = tk.Label(volume_ctrl_frame,
                                          text="50%",
                                          width=5,
                                          font=("微软雅黑", 10),
@@ -337,7 +334,7 @@ class MainPage(tk.Frame):
         self.volume_value_label.pack(side=tk.LEFT, padx=5)
         
         # 增加音量按钮
-        self.volume_up_btn = tk.Button(volume_frame,
+        self.volume_up_btn = tk.Button(volume_ctrl_frame,
                                      text="+",
                                      command=self.increase_volume,
                                      width=3,
@@ -345,6 +342,32 @@ class MainPage(tk.Frame):
                                      bg='#2196F3',
                                      fg='white')
         self.volume_up_btn.pack(side=tk.LEFT, padx=5)
+        
+        # 添加自定义说话文本输入框（放在最右侧）
+        self.speech_frame = tk.LabelFrame(self.param_frame, 
+                                        text="自定义舞蹈前的说话内容", 
+                                        font=("微软雅黑", 10),
+                                        bg='#f0f0f0')
+        # 添加一个空列作为间隔，然后将文本框放在列3
+        self.param_frame.grid_columnconfigure(2, minsize=30)  # 设置列2为间隔列，宽度30像素
+        self.speech_frame.grid(row=0, column=3, rowspan=3, pady=5, padx=10, sticky='nsew')
+        
+        self.speech_text = tk.Text(self.speech_frame,
+                                 height=5,
+                                 width=30,
+                                 font=("微软雅黑", 9))
+        self.speech_text.pack(padx=5, pady=5, fill=tk.BOTH, expand=True)
+        self.speech_text.insert('1.0', "你好，欢迎欣赏京族传统舞蹈。现在我将为大家表演京族舞蹈，请欣赏。")
+        
+        # 添加说明标签
+        tk.Label(self.speech_frame, 
+               text="注意：仅在选择'京族舞蹈组合'时有效",
+               font=("微软雅黑", 8),
+               bg='#f0f0f0',
+               fg='#666666').pack(pady=2)
+        
+        # 添加分隔线
+        ttk.Separator(self.param_frame, orient='horizontal').grid(row=3, column=0, columnspan=4, pady=10, sticky='ew')
         
         # 创建按钮框架
         self.button_frame = tk.Frame(self, bg='#f0f0f0')
@@ -438,12 +461,22 @@ class MainPage(tk.Frame):
         """执行机器人动作"""
         try:
             motion_name = self.motion_var.get()
+            
+            # 对于京族舞蹈组合，获取自定义说话内容
+            custom_text = None
+            if motion_name == "京族舞蹈组合":
+                # 获取用户输入的自定义文本
+                text_input = self.speech_text.get('1.0', 'end-1c')
+                if text_input.strip():  # 只有非空文本才使用
+                    custom_text = text_input
+                self.update_status(f"开始执行：先说话后跳京族舞蹈")
+            
             # 如果选择的是映射中的中文名称，转换为英文名称
             if motion_name in self.motion_name_map:
                 motion_name = self.motion_name_map[motion_name]
                 
             self.update_status(f"开始执行动作: {self.motion_var.get()}")
-            self.controller.robot.start_motion(motion_name, "v1")
+            self.controller.robot.start_motion(motion_name, "v1", custom_text)
             self.update_status("动作执行完成！")
         except Exception as e:
             error_msg = f"执行动作时出错：{str(e)}"
